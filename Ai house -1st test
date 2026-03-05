@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI House</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:        #ffffff;
+      --off:          #f8f6f2;
+      --orange:       #f97316;
+      --orange-light: #fff4ed;
+      --orange-mid:   #fb923c;
+      --green:        #22c55e;
+      --green-light:  #f0fdf4;
+      --green-dark:   #16a34a;
+      --dark:         #111827;
+      --mid:          #4b5563;
+      --soft:         #9ca3af;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--off);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* ── PAGES ── */
+    .page { display: none; animation: fadeIn 0.45s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ══════════════════════════════
+       NAVBAR
+    ══════════════════════════════ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem;
+      height: 68px;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(249,115,22,0.12);
+      box-shadow: 0 2px 24px rgba(0,0,0,0.05);
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .nav-logo span.ai { color: var(--orange); }
+    .nav-logo span.house { color: var(--green-dark); }
+    .nav-logo .dot { color: var(--orange); font-size: 1.8rem; line-height: 0; }
+
+    .nav-center {
+      display: flex; align-items: center; gap: 0.25rem;
+    }
+
+    .nav-tab {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 500;
+      padding: 0.45rem 1.1rem;
+      border-radius: 99px;
+      border: none;
+      background: transparent;
+      color: var(--mid);
+      cursor: pointer;
+      transition: all 0.22s;
+      letter-spacing: 0.01em;
+    }
+    .nav-tab:hover { background: var(--orange-light); color: var(--orange); }
+    .nav-tab.active {
+      background: var(--orange);
+      color: var(--white);
+      box-shadow: 0 2px 12px rgba(249,115,22,0.28);
+    }
+
+    .nav-auth {
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .btn-signin {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 0.42rem 1.1rem;
+      border-radius: 99px;
+      border: 1.5px solid var(--orange);
+      background: transparent;
+      color: var(--orange);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-signin:hover { background: var(--orange); color: var(--white); }
+
+    .btn-register {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 0.42rem 1.1rem;
+      border-radius: 99px;
+      border: 1.5px solid var(--green-dark);
+      background: var(--green-dark);
+      color: var(--white);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-register:hover { background: var(--green); border-color: var(--green); }
+
+    /* ══════════════════════════════
+       MODAL OVERLAY
+    ══════════════════════════════ */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(17,24,39,0.45);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn 0.25s ease; }
+
+    .modal-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2.5rem 2.8rem;
+      width: min(420px, 92vw);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.13);
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute; top: 1rem; right: 1.2rem;
+      background: var(--off); border: none;
+      width: 32px; height: 32px; border-radius: 50%;
+      font-size: 1rem; cursor: pointer; color: var(--mid);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.18s;
+    }
+    .modal-close:hover { background: var(--orange-light); color: var(--orange); }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .modal-title span { color: var(--orange); }
+    .modal-sub { font-size: 0.88rem; color: var(--soft); margin-bottom: 1.6rem; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--mid);
+      margin-bottom: 0.35rem;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      border: 1.5px solid #e5e7eb;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      background: var(--off);
+      color: var(--dark);
+      transition: border 0.18s;
+      outline: none;
+    }
+    .form-group input:focus { border-color: var(--orange); background: var(--white); }
+
+    .modal-btn {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.72rem;
+      border-radius: 12px;
+      border: none;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.2s;
+    }
+    .modal-btn.orange { background: var(--orange); color: var(--white); }
+    .modal-btn.orange:hover { background: var(--orange-mid); box-shadow: 0 4px 16px rgba(249,115,22,0.3); }
+    .modal-btn.green { background: var(--green-dark); color: var(--white); }
+    .modal-btn.green:hover { background: var(--green); box-shadow: 0 4px 16px rgba(34,197,94,0.28); }
+
+    .modal-switch {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.84rem;
+      color: var(--soft);
+    }
+    .modal-switch a { color: var(--orange); text-decoration: none; font-weight: 500; cursor: pointer; }
+    .modal-switch a:hover { text-decoration: underline; }
+
+    /* ══════════════════════════════
+       PAGE WRAPPER
+    ══════════════════════════════ */
+    .page-wrap {
+      padding-top: 68px;
+      min-height: 100vh;
+    }
+
+    /* ══════════════════════════════
+       HOME PAGE
+    ══════════════════════════════ */
+    .hero {
+      position: relative;
+      min-height: calc(100vh - 68px);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      padding: 3rem 2rem;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 65% 40%, rgba(249,115,22,0.12) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 50% at 25% 70%, rgba(34,197,94,0.10) 0%, transparent 60%),
+        var(--off);
+      z-index: 0;
+    }
+
+    /* Floating blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(48px);
+      opacity: 0.45;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .blob-1 { width: 380px; height: 380px; background: var(--orange-light); top: -80px; right: 5%; animation: drift1 8s ease-in-out infinite; }
+    .blob-2 { width: 280px; height: 280px; background: var(--green-light); bottom: 60px; left: 8%; animation: drift2 10s ease-in-out infinite; }
+    .blob-3 { width: 200px; height: 200px; background: rgba(249,115,22,0.08); top: 45%; left: 45%; animation: drift1 12s ease-in-out infinite reverse; }
+    @keyframes drift1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(20px,-25px) scale(1.05); } }
+    @keyframes drift2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-18px,22px) scale(1.04); } }
+
+    .hero-content {
+      position: relative; z-index: 1;
+      text-align: center;
+      max-width: 780px;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--white);
+      border: 1.5px solid rgba(249,115,22,0.25);
+      border-radius: 99px;
+      padding: 0.35rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--orange);
+      margin-bottom: 1.6rem;
+      box-shadow: 0 2px 12px rgba(249,115,22,0.10);
+    }
+    .hero-badge .dot-live {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 2px rgba(34,197,94,0.3);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 0 2px rgba(34,197,94,0.3); } 50% { box-shadow: 0 0 0 5px rgba(34,197,94,0.1); } }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.6rem, 6vw, 4.4rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -1.5px;
+      margin-bottom: 1.2rem;
+    }
+    .hero h1 em { font-style: normal; color: var(--orange); }
+    .hero h1 .g { color: var(--green-dark); }
+
+    .hero-sub {
+      font-size: 1.08rem;
+      color: var(--mid);
+      line-height: 1.7;
+      max-width: 560px;
+      margin: 0 auto 2.2rem;
+      font-weight: 300;
+    }
+
+    .hero-actions {
+      display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap;
+    }
+
+    .cta-primary {
+      padding: 0.75rem 2rem;
+      border-radius: 99px;
+      border: none;
+      background: var(--orange);
+      color: var(--white);
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.22s;
+      box-shadow: 0 4px 20px rgba(249,115,22,0.28);
+    }
+    .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(249,115,22,0.36); background: var(--orange-mid); }
+
+    .cta-secondary {
+      padding: 0.75rem 2rem;
+      border-radius: 99px;
+      border: 1.5px solid var(--green-dark);
+      background: transparent;
+      color: var(--green-dark);
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.22s;
+    }
+    .cta-secondary:hover { background: var(--green-dark); color: var(--white); transform: translateY(-2px); }
+
+    /* Stats row */
+    .stats-row {
+      display: flex; justify-content: center; gap: 2.5rem;
+      margin-top: 3.5rem; flex-wrap: wrap;
+    }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--dark);
+    }
+    .stat-num span { color: var(--orange); }
+    .stat-label { font-size: 0.8rem; color: var(--soft); margin-top: 0.15rem; }
+
+    /* About section */
+    .about-section {
+      padding: 5rem 2rem;
+      background: var(--white);
+    }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 0.6rem;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      letter-spacing: -0.5px;
+    }
+    .section-title em { font-style: normal; color: var(--green-dark); }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.4rem;
+      margin-top: 2.5rem;
+    }
+
+    .feature-card {
+      background: var(--off);
+      border-radius: 18px;
+      padding: 1.8rem 1.6rem;
+      border: 1.5px solid transparent;
+      transition: all 0.25s;
+    }
+    .feature-card:hover {
+      border-color: var(--orange-light);
+      box-shadow: 0 8px 32px rgba(249,115,22,0.09);
+      transform: translateY(-3px);
+    }
+    .card-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+    .icon-orange { background: var(--orange-light); }
+    .icon-green  { background: var(--green-light); }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .card-text { font-size: 0.88rem; color: var(--mid); line-height: 1.65; }
+
+    /* ══════════════════════════════
+       EVENTS PAGE
+    ══════════════════════════════ */
+    .events-header {
+      background: linear-gradient(135deg, rgba(249,115,22,0.08) 0%, rgba(34,197,94,0.06) 100%);
+      padding: 3.5rem 2rem 2rem;
+      text-align: center;
+    }
+
+    .events-tabs {
+      display: flex; justify-content: center; gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+    .ev-tab {
+      padding: 0.5rem 1.4rem;
+      border-radius: 99px;
+      border: 1.5px solid #e5e7eb;
+      background: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--mid);
+    }
+    .ev-tab.active { background: var(--orange); border-color: var(--orange); color: var(--white); }
+    .ev-tab:hover:not(.active) { border-color: var(--orange); color: var(--orange); }
+
+    .events-body { padding: 2.5rem 2rem 4rem; max-width: 1100px; margin: 0 auto; }
+
+    .events-panel { display: none; animation: fadeIn 0.35s ease; }
+    .events-panel.active { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+
+    .event-card {
+      background: var(--white);
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1.5px solid #f3f4f6;
+      transition: all 0.25s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .event-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.09); }
+
+    .event-top {
+      padding: 1.4rem 1.5rem 0;
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+
+    .event-tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.28rem 0.75rem;
+      border-radius: 99px;
+    }
+    .tag-orange { background: var(--orange-light); color: var(--orange); }
+    .tag-green  { background: var(--green-light); color: var(--green-dark); }
+
+    .event-date {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--soft);
+      text-align: right;
+    }
+    .event-date span { display: block; font-size: 1.3rem; color: var(--dark); line-height: 1; }
+
+    .event-body { padding: 1rem 1.5rem 1.5rem; }
+    .event-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .event-desc { font-size: 0.86rem; color: var(--mid); line-height: 1.6; margin-bottom: 1rem; }
+    .event-meta {
+      display: flex; align-items: center; gap: 1rem;
+      font-size: 0.8rem; color: var(--soft);
+    }
+    .event-meta span { display: flex; align-items: center; gap: 0.3rem; }
+
+    /* ══════════════════════════════
+       CONTACT PAGE
+    ══════════════════════════════ */
+    .contact-wrap {
+      max-width: 1000px; margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 3rem;
+    }
+    @media (max-width: 700px) { .contact-wrap { grid-template-columns: 1fr; } }
+
+    .contact-info-col { padding-top: 1rem; }
+
+    .contact-info-col .section-title { font-size: 1.9rem; }
+
+    .contact-desc { font-size: 0.93rem; color: var(--mid); line-height: 1.7; margin-bottom: 2rem; }
+
+    .contact-item {
+      display: flex; align-items: flex-start; gap: 1rem;
+      margin-bottom: 1.4rem;
+    }
+    .c-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .c-label { font-size: 0.78rem; color: var(--soft); margin-bottom: 0.1rem; }
+    .c-value { font-size: 0.93rem; font-weight: 500; color: var(--dark); }
+
+    /* Contact form */
+    .contact-form-card {
+      background: var(--white);
+      border-radius: 22px;
+      padding: 2.2rem 2rem;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.06);
+      border: 1.5px solid #f3f4f6;
+    }
+    .cf-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+    .cf-sub { font-size: 0.84rem; color: var(--soft); margin-bottom: 1.6rem; }
+
+    .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 440px) { .cf-row { grid-template-columns: 1fr; } }
+
+    .cf-group { margin-bottom: 1rem; }
+    .cf-group label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--mid); margin-bottom: 0.35rem; }
+    .cf-group input, .cf-group textarea, .cf-group select {
+      width: 100%;
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      border: 1.5px solid #e5e7eb;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--dark);
+      background: var(--off);
+      outline: none;
+      transition: border 0.18s;
+      resize: none;
+    }
+    .cf-group input:focus, .cf-group textarea:focus, .cf-group select:focus {
+      border-color: var(--orange); background: var(--white);
+    }
+
+    .cf-submit {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 12px;
+      border: none;
+      background: var(--orange);
+      color: var(--white);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.3rem;
+      letter-spacing: 0.02em;
+    }
+    .cf-submit:hover { background: var(--orange-mid); box-shadow: 0 4px 18px rgba(249,115,22,0.3); }
+
+    /* ══════════════════════════════
+       FOOTER
+    ══════════════════════════════ */
+    footer {
+      background: var(--dark);
+      color: #9ca3af;
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.84rem;
+    }
+    footer strong { color: var(--orange); font-family: 'Syne', sans-serif; }
+    footer .f-green { color: var(--green); }
+
+    /* ══════════════════════════════
+       SUCCESS TOAST
+    ══════════════════════════════ */
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 300;
+      background: var(--green-dark);
+      color: var(--white);
+      padding: 0.9rem 1.4rem;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+      display: none;
+      animation: slideUp 0.3s ease;
+    }
+    .toast.show { display: block; }
+    @keyframes slideUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+
+  </style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ══ -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">
+    <span class="ai">AI</span><span class="house">House</span><span class="dot">·</span>
+  </div>
+
+  <div class="nav-center">
+    <button class="nav-tab active" onclick="showPage('home', this)">Home</button>
+    <button class="nav-tab" onclick="showPage('events', this)">Events</button>
+    <button class="nav-tab" onclick="showPage('contact', this)">Contact</button>
+  </div>
+
+  <div class="nav-auth">
+    <button class="btn-signin" onclick="openModal('signin')">Sign In</button>
+    <button class="btn-register" onclick="openModal('register')">Register</button>
+  </div>
+</nav>
+
+<!-- ══ MODAL: SIGN IN ══ -->
+<div class="modal-overlay" id="modal-signin">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('signin')">✕</button>
+    <div class="modal-title">Welcome <span>Back</span></div>
+    <div class="modal-sub">Sign in to your AI House account</div>
+
+    <div class="form-group">
+      <label>Email address</label>
+      <input type="email" placeholder="you@example.com" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" placeholder="••••••••" />
+    </div>
+    <button class="modal-btn orange" onclick="handleAuth('Welcome back! 👋')">Sign In</button>
+    <div class="modal-switch">
+      No account? <a onclick="switchModal('signin','register')">Register here</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: REGISTER ══ -->
+<div class="modal-overlay" id="modal-register">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('register')">✕</button>
+    <div class="modal-title">Join <span>AI House</span></div>
+    <div class="modal-sub">Create your free account today</div>
+
+    <div class="form-group">
+      <label>Full name</label>
+      <input type="text" placeholder="Your name" />
+    </div>
+    <div class="form-group">
+      <label>Email address</label>
+      <input type="email" placeholder="you@example.com" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" placeholder="••••••••" />
+    </div>
+    <button class="modal-btn green" onclick="handleAuth('Account created! Welcome 🎉')">Create Account</button>
+    <div class="modal-switch">
+      Already a member? <a onclick="switchModal('register','signin')">Sign in</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════
+     PAGE: HOME
+════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="page-wrap">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+
+      <div class="hero-content">
+        <div class="hero-badge">
+          <div class="dot-live"></div>
+          Now hosting AI activities &amp; workshops
+        </div>
+
+        <h1>
+          Your home for<br>
+          <em>Artificial</em> <span class="g">Intelligence</span><br>
+          exploration
+        </h1>
+
+        <p class="hero-sub">
+          AI House is a community-driven platform bringing together curious minds,
+          hands-on events, and real AI experiences — all in one place.
+        </p>
+
+        <div class="hero-actions">
+          <button class="cta-primary" onclick="showPage('events', document.querySelectorAll('.nav-tab')[1])">Explore Events</button>
+          <button class="cta-secondary" onclick="openModal('register')">Join the Club</button>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-num">12<span>+</span></div>
+            <div class="stat-label">Events this semester</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">3<span>00+</span></div>
+            <div class="stat-label">Members &amp; growing</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">8<span>+</span></div>
+            <div class="stat-label">AI workshops</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About cards -->
+    <section class="about-section">
+      <div class="section-inner">
+        <div class="section-label">What we do</div>
+        <div class="section-title">A space where <em>ideas meet intelligence</em></div>
+
+        <div class="cards-grid">
+          <div class="feature-card">
+            <div class="card-icon icon-orange">🤖</div>
+            <div class="card-title">AI Workshops</div>
+            <div class="card-text">Hands-on sessions covering machine learning, prompt engineering, computer vision, and more — for all skill levels.</div>
+          </div>
+          <div class="feature-card">
+            <div class="card-icon icon-green">🌱</div>
+            <div class="card-title">Community Learning</div>
+            <div class="card-text">A welcoming space for beginners and experts alike to share knowledge, collaborate, and grow together.</div>
+          </div>
+          <div class="feature-card">
+            <div class="card-icon icon-orange">⚡</div>
+            <div class="card-title">Hackathons</div>
+            <div class="card-text">Competitive build events where teams race to create AI-powered solutions to real-world problems.</div>
+          </div>
+          <div class="feature-card">
+            <div class="card-icon icon-green">🎤</div>
+            <div class="card-title">Guest Talks</div>
+            <div class="card-text">Industry professionals and researchers sharing insights about the latest AI trends and breakthroughs.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Made with ❤️ by <strong>AI House</strong> — <span class="f-green">Club</span> · All rights reserved © 2025
+    </footer>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE: EVENTS
+════════════════════════════════════ -->
+<div class="page" id="page-events">
+  <div class="page-wrap">
+    <div class="events-header">
+      <div class="section-label">What's happening</div>
+      <div class="section-title" style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-0.5px;">
+        Events &amp; Activities
+      </div>
+      <div class="events-tabs">
+        <button class="ev-tab active" onclick="switchEvTab('current', this)">🔴 Current Events</button>
+        <button class="ev-tab" onclick="switchEvTab('upcoming', this)">🟢 Upcoming Events</button>
+      </div>
+    </div>
+
+    <div class="events-body">
+
+      <!-- Current -->
+      <div class="events-panel active" id="ev-current">
+
+        <div class="event-card">
+          <div class="event-top">
+            <div class="event-tag tag-orange">Workshop</div>
+            <div class="event-date"><span>05</span>Mar 2025</div>
+          </div>
+          <div class="event-body">
+            <div class="event-title">Intro to Prompt Engineering</div>
+            <div class="event-desc">Learn how to craft effective prompts for ChatGPT, Claude, and other LLMs. Perfect for beginners curious about AI tools.</div>
+            <div class="event-meta">
+              <span>📍 Room B204</span>
+              <span>🕑 2:00 PM</span>
+              <span>👥 Open</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-top">
+            <div class="event-tag tag-green">Hackathon</div>
+            <div class="event-date"><span>07</span>Mar 2025</div>
+          </div>
+          <div class="event-body">
+            <div class="event-title">AI Mini Hackathon — 6h Sprint</div>
+            <div class="event-desc">Build a working AI prototype in 6 hours. Solo or teams of 2. Prizes for the top 3 projects judged by our mentors.</div>
+            <div class="event-meta">
+              <span>📍 Innovation Lab</span>
+              <span>🕗 9:00 AM</span>
+              <span>👥 32 spots</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-top">
+            <div class="event-tag tag-orange">Talk</div>
+            <div class="event-date"><span>10</span>Mar 2025</div>
+          </div>
+          <div class="event-body">
+            <div class="event-title">AI in Healthcare — Guest Speaker</div>
+            <div class="event-desc">Dr. Fatima Zohra shares her research on using deep learning for early disease detection in medical imaging.</div>
+            <div class="event-meta">
+              <span>📍 Auditorium A</span>
+              <span>🕔 4:30 PM</span>
+              <span>👥 All welcome</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Upcoming -->
+      <div class="events-panel" id="ev-upcoming">
+
+        <div class="event-card">
+          <div class="event-top">
+            <div class="event-tag tag-green">Workshop</div>
+            <div class="event-date"><span>18</span>Mar 2025</div>
+          </div>
+          <div class="event-body">
+            <div class="event-title">Computer Vision with Python</div>
+            <div class="event-desc">A practical workshop using OpenCV and YOLOv8 to build real-time object detection applications from scratch.</div>
+            <div class="event-meta">
+              <span>📍 Computer Lab 3</span>
+              <span>🕑 2:00 PM</span>
+              <span>👥 20 spots</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-top">
+            <div class="event-tag tag-orange">Panel</div>
+            <div class="event-date"><span>24</span>Mar 2025</div>
+          </div>
+          <div class="event-body">
+            <div class="event-title">Ethics in AI — Open Discussion</div>
+            <div class="event-desc">A panel featuring students, professors, and a local tech professional exploring the moral dimensions of modern AI systems.</div>
+            <div class="event-meta">
+              <span>📍 Conference Hall</span>
+              <span>🕔 4:00 PM</span>
+              <span>👥 All welcome</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-top">
+            <div class="event-tag tag-green">Bootcamp</div>
+            <div class="event-date"><span>02</span>Apr 2025</div>
+          </div>
+          <div class="event-body">
+            <div class="event-title">3-Day ML Bootcamp</div>
+            <div class="event-desc">Intensive 3-day training covering supervised learning, neural networks, and model deployment — from theory to production.</div>
+            <div class="event-meta">
+              <span>📍 TBD</span>
+              <span>🕗 9:00 AM</span>
+              <span>👥 Registration soon</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer>
+      Made with ❤️ by <strong>AI House</strong> — <span class="f-green">Club</span> · All rights reserved © 2025
+    </footer>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE: CONTACT
+════════════════════════════════════ -->
+<div class="page" id="page-contact">
+  <div class="page-wrap">
+    <div style="padding: 3rem 2rem 0; max-width:1000px; margin:0 auto;">
+      <div class="section-label">Get in touch</div>
+    </div>
+
+    <div class="contact-wrap">
+
+      <!-- Left: info -->
+      <div class="contact-info-col">
+        <div class="section-title">We'd love to <em style="color:var(--orange);font-style:normal;">hear from you</em></div>
+        <p class="contact-desc">
+          Whether you have a question about our events, want to collaborate, or just want to say hello — our team is always happy to chat.
+        </p>
+
+        <div class="contact-item">
+          <div class="c-icon icon-orange">📧</div>
+          <div>
+            <div class="c-label">Email us at</div>
+            <div class="c-value">contact@aihouse.club</div>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="c-icon icon-green">📍</div>
+          <div>
+            <div class="c-label">Find us at</div>
+            <div class="c-value">Faculty of Science, Building B — Room 104</div>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="c-icon icon-orange">📱</div>
+          <div>
+            <div class="c-label">Follow us</div>
+            <div class="c-value">@AIHouseClub on Instagram &amp; LinkedIn</div>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="c-icon icon-green">🕐</div>
+          <div>
+            <div class="c-label">Open hours</div>
+            <div class="c-value">Sunday – Thursday, 9:00 AM – 5:00 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: form -->
+      <div class="contact-form-card">
+        <div class="cf-title">Send a Message</div>
+        <div class="cf-sub">We'll get back to you within 24 hours</div>
+
+        <div class="cf-row">
+          <div class="cf-group">
+            <label>First name</label>
+            <input type="text" placeholder="Yassine" />
+          </div>
+          <div class="cf-group">
+            <label>Last name</label>
+            <input type="text" placeholder="Benkara" />
+          </div>
+        </div>
+
+        <div class="cf-group">
+          <label>Email</label>
+          <input type="email" placeholder="you@example.com" />
+        </div>
+
+        <div class="cf-group">
+          <label>Subject</label>
+          <select>
+            <option value="">Select a topic…</option>
+            <option>Event enquiry</option>
+            <option>Partnership / Collaboration</option>
+            <option>Membership question</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="cf-group">
+          <label>Message</label>
+          <textarea rows="4" placeholder="Tell us what's on your mind…"></textarea>
+        </div>
+
+        <button class="cf-submit" onclick="showToast('Message sent! We\'ll be in touch soon ✉️')">Send Message →</button>
+      </div>
+    </div>
+
+    <footer>
+      Made with ❤️ by <strong>AI House</strong> — <span class="f-green">Club</span> · All rights reserved © 2025
+    </footer>
+  </div>
+</div>
+
+
+<!-- ══ SCRIPTS ══ -->
+<script>
+  function showPage(name, tabEl) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+
+    // Update nav tabs
+    if (tabEl) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      tabEl.classList.add('active');
+    } else {
+      // default: highlight correct tab
+      const map = { home:0, events:1, contact:2 };
+      document.querySelectorAll('.nav-tab').forEach((t,i) => {
+        t.classList.toggle('active', i === map[name]);
+      });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function openModal(type) {
+    document.getElementById('modal-' + type).classList.add('open');
+  }
+  function closeModal(type) {
+    document.getElementById('modal-' + type).classList.remove('open');
+  }
+  function switchModal(close, open) {
+    closeModal(close); openModal(open);
+  }
+
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
+  });
+
+  function handleAuth(msg) {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+    showToast(msg);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  function switchEvTab(panel, tabEl) {
+    document.querySelectorAll('.events-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('ev-' + panel).classList.add('active');
+    document.querySelectorAll('.ev-tab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+  }
+</script>
+</body>
+</html>
